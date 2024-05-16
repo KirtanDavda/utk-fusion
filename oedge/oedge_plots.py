@@ -634,8 +634,26 @@ class OedgePlots:
 
             # Read in the data into a form for PolyCollection. Account for
             # special options.
+            if dataname == 'Flux':
+                scaling = 1.0 / self.qtim
+                kvhs = (self.read_data_2d('KVHS', no_core=no_core))*scaling
+                dens = self.read_data_2d('KNBS', no_core=no_core)
+                data = dens*kvhs
+            
+            elif dataname == 'Velocity':
+                scaling = 1.0 / self.qtim
+                kvhs = (self.read_data_2d('KVHS', no_core=no_core))*scaling
+                data = kvhs
+
+            elif dataname == 'Abs_Flux':
+                scaling = 1.0 / self.qtim
+                kvhs = (self.read_data_2d('KVHS', no_core=no_core))*scaling
+                dens = self.read_data_2d('KNBS', no_core=no_core)
+                data = dens*np.abs(kvhs)
+                #print(data)
+                #print(np.shape(data))
             # Flow velocity with additional velocity specified by T13.
-            if dataname == 'KVHSimp':
+            elif dataname == 'KVHSimp':
                 data = self.read_data_2d_kvhs_t13(no_core=no_core)
 
             # Special option to plot the ring numbers.
@@ -782,9 +800,11 @@ class OedgePlots:
 
         # Add colorbar label.
         if cbar_label is None:
-            cbar.ax.set_ylabel(dataname, fontsize=fontsize)
+            #cbar.ax.set_ylabel(dataname, fontsize=fontsize)
+            cbar.ax.set_ylabel("", fontsize=fontsize)
         else:
-            cbar.ax.set_ylabel(cbar_label, fontsize=fontsize)
+            #cbar.ax.set_ylabel(cbar_label, fontsize=fontsize)
+            cbar.ax.set_ylabel("", fontsize=fontsize)
 
         # A bit larger colorbar tick label font size.
         cbar.ax.tick_params(labelsize=14)
@@ -851,8 +871,9 @@ class OedgePlots:
         ax.axis('equal')
         ax.set_xlim(xlim)
         ax.set_ylim(ylim)
-        ax.set_xlabel('R (m)', fontsize=fontsize)
-        ax.set_ylabel('Z (m)', fontsize=fontsize)
+        ax.set_xlabel('R (m)', fontsize=fontsize, font='Arial Narrow')
+        ax.set_ylabel('Z (m)', fontsize=fontsize, font='Arial Narrow')
+        ax.set_title(cbar_label, fontsize=fontsize, font='Arial Narrow')
         fig.tight_layout()
         fig.show()
 
@@ -1955,7 +1976,7 @@ class OedgePlots:
         z_start   : Z coordinate of the measurement starting point.
         z_end     : Z coordinate of the measurement ending point.
         data      : One of 'Te', 'ne', 'Mach', 'Velocity', 'L OTF', 'L ITF',
-                      'nz', 'ring' or 'neut_dens'.
+                      'nz', 'ring' 'D_alpha' 'neut_dens_atomic' or 'neut_dens_molecular'.
         num_locs  :
         plot      : Either None, 'R' or 'Z' (or 'r' or 'z'), or 'psin'. If the probe is at a
                      constant R, then use 'R', likewise for 'Z'.
@@ -2132,9 +2153,25 @@ class OedgePlots:
                 probe = ring + 1  # To go back with the 1-indexed convention.
                 ylabel = "Ring"
 
-            elif data == "neut_dens":
+            elif data == "neut_dens_atomic":
                 probe = self.nc["PINATO"][ring, knot]
                 ylabel = "Neutral Density (m-3)"
+            
+            elif data == "D_alpha":
+                probe = self.nc["PINALP"][ring, knot]
+                ylabel = "D Alpha (ph/m3/s)"
+
+            elif data == "neut_dens_molecular":
+                probe = self.nc["PINMOL"][ring, knot]
+                ylabel = "Neutral Density (m-3)"
+
+            elif data == "EXB_R":
+                probe = self.nc["EXB_R"][ring, knot]
+                ylabel = "m/s"
+
+            elif data == "PSIFL":
+                probe = self.nc["PSIFL"][ring, knot]
+                ylabel = "m"
 
             elif data.lower() == "zeff":
                 probe = self.nc["ZEFFS"][2, ring, knot]

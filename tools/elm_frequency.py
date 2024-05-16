@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import find_peaks
-from gadata import gadata
+from MiscORNL.gadata import gadata
 
 
 def get_fs_data(shot, tag="FS04"):
